@@ -1,0 +1,15 @@
+Gym Name: FitZone Gym
+
+Pricing:
+- Monthly: ₹2000
+- Quarterly: ₹5000
+- Yearly: ₹18000
+
+Timing:
+- Morning: 6 AM – 12 PM
+- Evening: 4 PM – 10 PM
+
+Services:
+- Personal training
+- Cardio
+- Strength training

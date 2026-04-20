@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Request, Response
 from html import escape
+import logging
 
 from app.services.agent import build_whatsapp_agent
 
 router = APIRouter()
 _agent = None
+
+FALLBACK_MESSAGE = "Sorry, something went wrong. Please try again."
 
 
 def _get_agent():
@@ -12,6 +15,9 @@ def _get_agent():
     if _agent is None:
         _agent = build_whatsapp_agent()
     return _agent
+
+
+logger = logging.getLogger("samvaad.webhook")
 
 
 @router.post("/webhook")
@@ -28,10 +34,11 @@ async def webhook(request: Request) -> Response:
         ai_text = "How can I help you today?"
     else:
         try:
-            result = await _get_agent().ainvoke({"input": message_body})
+            result = await _get_agent().ainvoke({"input": message_body, "user_id": from_number or ""})
             ai_text = (result.get("output") or "").strip() or "How can I help you today?"
         except Exception:
-            ai_text = "Sorry—I'm having trouble responding right now. Please try again in a moment."
+            logger.exception("Agent failed for user=%r body=%r", from_number, message_body)
+            ai_text = FALLBACK_MESSAGE
 
     # TwiML must be valid XML; escape model output.
     safe_text = escape(ai_text, quote=False)
