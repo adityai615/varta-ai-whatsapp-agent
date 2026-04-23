@@ -5,6 +5,7 @@ from uuid import uuid4
 from langchain_core.tools import tool
 
 from app.services.rag import rag_answer
+from app.services.request_context import get_business_id
 
 
 @tool("faq_tool")
@@ -30,7 +31,7 @@ def faq_tool(question: str) -> str:
 @tool("rag_tool")
 async def rag_tool(question: str) -> str:
     """Answer questions using retrieved context from business knowledge base."""
-    return await rag_answer(question)
+    return await rag_answer(question, business_id=get_business_id())
 
 
 @tool("booking_tool")

@@ -1,4 +1,6 @@
 import os
+import re
+from pathlib import Path
 from functools import lru_cache
 from typing import List
 
@@ -8,9 +10,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.services.llm import build_llm
 
 
-DEFAULT_DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "business.txt")
-DEFAULT_CHROMA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "chroma_db")
-DEFAULT_COLLECTION = "business_kb"
+APP_DIR = Path(__file__).resolve().parents[1]  # app/
+DEFAULT_DATA_PATH = str(APP_DIR / "data" / "business.txt")
+DEFAULT_CHROMA_DIR = str(APP_DIR.parent / "chroma_db")
+DEFAULT_COLLECTION_PREFIX = "business_kb"
 
 
 RAG_SYSTEM_PROMPT = (
@@ -42,16 +45,58 @@ def _build_embeddings():
     return FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
 
 
-@lru_cache(maxsize=1)
-def _vectorstore(data_path: str = DEFAULT_DATA_PATH):
+def _normalize_business_id(business_id: str) -> str:
     """
-    Create/load a persistent Chroma vector store for the business KB.
+    Turn arbitrary identifiers (including WhatsApp numbers) into a safe key.
+    Examples:
+      - "whatsapp:+14155238886" -> "whatsapp_14155238886"
+      - "+91 98765 43210" -> "919876543210"
+      - "gym" -> "gym"
+    """
+    raw = (business_id or "").strip()
+    if not raw:
+        return "default"
+    raw = raw.lower()
+    raw = raw.replace("whatsapp:", "whatsapp_")
+    raw = re.sub(r"\s+", "", raw)
+    raw = re.sub(r"[^a-z0-9_+]", "_", raw)
+    raw = raw.replace("+", "")
+    raw = re.sub(r"_+", "_", raw).strip("_")
+    return raw or "default"
+
+
+def _business_data_path(business_id: str) -> str | None:
+    key = _normalize_business_id(business_id)
+    candidate = APP_DIR / "data" / key / "business.txt"
+    if candidate.exists():
+        return str(candidate)
+    default = Path(DEFAULT_DATA_PATH)
+    if default.exists():
+        return str(default)
+    return None
+
+
+def _kb_fingerprint(path: str) -> str:
+    """
+    Fingerprint the KB file so updates create a fresh index automatically.
+    Uses mtime_ns + size (fast, stable enough for this use-case).
+    """
+    p = Path(path)
+    st = p.stat()
+    return f"{st.st_mtime_ns:x}_{st.st_size:x}"
+
+
+@lru_cache(maxsize=128)
+def _vectorstore(business_key: str, data_path: str, kb_fp: str):
+    """
+    Create/load a persistent Chroma vector store for a business KB.
     Cached in-process so webhook calls are fast.
     """
     from langchain_chroma import Chroma
 
-    persist_directory = os.getenv("CHROMA_DIR", DEFAULT_CHROMA_DIR)
-    collection_name = os.getenv("CHROMA_COLLECTION", DEFAULT_COLLECTION)
+    base_dir = os.getenv("CHROMA_DIR", DEFAULT_CHROMA_DIR)
+    persist_directory = str(Path(base_dir) / business_key / kb_fp)
+    collection_name = os.getenv("CHROMA_COLLECTION", f"{DEFAULT_COLLECTION_PREFIX}_{business_key}_{kb_fp}")
 
     embeddings = _build_embeddings()
     vs = Chroma(
@@ -75,17 +120,28 @@ def _vectorstore(data_path: str = DEFAULT_DATA_PATH):
     return vs
 
 
-def build_retriever(data_path: str = DEFAULT_DATA_PATH):
-    vs = _vectorstore(data_path=data_path)
+def build_retriever(*, business_id: str = "", data_path: str | None = None):
+    key = _normalize_business_id(business_id)
+    resolved_path = data_path or _business_data_path(business_id)
+    if not resolved_path:
+        raise FileNotFoundError(
+            f"No knowledge base found for business_id={business_id!r}. "
+            f"Expected `app/data/{key}/business.txt` (or `app/data/business.txt`)."
+        )
+    fp = _kb_fingerprint(resolved_path)
+    vs = _vectorstore(key, resolved_path, fp)
     return vs.as_retriever(search_kwargs={"k": 4})
 
 
-async def rag_answer(question: str, data_path: str = DEFAULT_DATA_PATH) -> str:
+async def rag_answer(question: str, *, business_id: str = "", data_path: str | None = None) -> str:
     """
     Retrieve relevant chunks and answer using ChatGroq.
     Answer is constrained to retrieved context only.
     """
-    retriever = build_retriever(data_path=data_path)
+    try:
+        retriever = build_retriever(business_id=business_id, data_path=data_path)
+    except FileNotFoundError:
+        return "I don't know based on the provided information."
     docs = await retriever.ainvoke(question)
     if not docs:
         return "I don't know based on the provided information."

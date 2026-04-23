@@ -1,4 +1,4 @@
-Gym Name: FitZone Gym
+Saloon Name: Unisex Saloon
 
 Pricing:
 - Monthly: ₹2000
