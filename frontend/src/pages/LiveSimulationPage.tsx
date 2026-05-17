@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Paperclip, SendHorizontal, ShieldCheck, Smile } from "lucide-react";
 
+import { BRAND_NAME } from "../brand";
 import { Card } from "../components/Card";
 import { ChatBubbles } from "../components/ChatUI";
 import { PageHeader } from "../components/PageHeader";
@@ -72,7 +73,7 @@ export function LiveSimulationPage() {
     <div className="flex h-full flex-col gap-4 overflow-hidden">
       <PageHeader
         title="Live Simulation"
-        subtitle="A premium WhatsApp-like chat simulator. Messages appear instantly and the AI replies live."
+        subtitle="A premium WhatsApp-style simulator — messages hit your FastAPI webhook and the Varta AI agent replies in real time."
       />
       <div className="flex min-h-0 flex-1">
         <div className="flex min-h-0 flex-1 flex-col">
@@ -101,7 +102,11 @@ export function LiveSimulationPage() {
                 <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                   <div className="mb-3 flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 shadow-sm ring-1 ring-black/5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="h-10 w-10 shrink-0 rounded-full bg-whatsapp-green/15 ring-1 ring-whatsapp-green/25" />
+                      <img
+                        src="/favicon.svg"
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-full bg-white object-cover ring-1 ring-whatsapp-green/30"
+                      />
                       <div className="min-w-0">
                         <div className="truncate text-sm font-semibold text-whatsapp-text">
                           {selected?.name || "Select a business"}
@@ -111,7 +116,7 @@ export function LiveSimulationPage() {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-whatsapp-muted">
                       <ShieldCheck size={16} className="text-whatsapp-green" />
-                      Samvaad AI
+                      {BRAND_NAME}
                     </div>
                   </div>
 

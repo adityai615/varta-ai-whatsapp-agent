@@ -60,7 +60,7 @@ export function DashboardPage() {
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Dashboard"
-        subtitle="A quick snapshot of your Samvaad AI workspace."
+        subtitle="A quick snapshot of your Varta AI workspace — AI-powered WhatsApp automation for every business you connect."
       />
 
       {err && (

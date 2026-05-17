@@ -97,7 +97,7 @@ export function BusinessesPage() {
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Businesses"
-        subtitle="Manage your WhatsApp businesses and knowledge base."
+        subtitle="Manage businesses, knowledge bases, and conversations from your Varta AI console."
         right={
           <Button variant="secondary" size="sm" onClick={() => void load()}>
             <RefreshCw size={16} />

@@ -34,7 +34,7 @@ export function AddBusinessPage() {
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Add Business"
-        subtitle="Create a new business workspace for your WhatsApp AI assistant."
+        subtitle="Create a new business workspace in Varta AI — AI-powered WhatsApp automation platform for businesses."
       />
 
       <Card title="Business details" subtitle="Add the name and WhatsApp phone number.">

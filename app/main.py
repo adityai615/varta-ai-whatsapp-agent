@@ -9,7 +9,7 @@ from app.api.webhook import router as webhook_router
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Samvaad AI", version="0.1.0")
+    app = FastAPI(title="Varta AI", version="0.1.0")
 
     cors_origins = (os.getenv("CORS_ORIGINS") or "http://localhost:5173,http://127.0.0.1:5173,http://0.0.0.0:5173").split(",")
     cors_origins = [o.strip().strip('"').strip("'") for o in cors_origins if o.strip()]

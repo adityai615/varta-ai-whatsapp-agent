@@ -17,7 +17,7 @@ DEFAULT_COLLECTION_PREFIX = "business_kb"
 
 
 RAG_SYSTEM_PROMPT = (
-    "You are Samvaad AI. Answer the user's question using ONLY the provided context. "
+    "You are Varta AI. Answer the user's question using ONLY the provided context. "
     "If the answer is not in the context, say: \"I don't know based on the provided information.\" "
     "Keep the answer short and accurate."
 )

@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
+:root {
+  --varta-green: #25d366;
+  --varta-text: #111b21;
+  --varta-muted: #667781;
+}
+
 html,
 body,
 #root {
@@ -10,6 +16,7 @@ body,
 body {
   margin: 0;
   background: #f0f2f5;
-  color: #111b21;
+  color: var(--varta-text);
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 

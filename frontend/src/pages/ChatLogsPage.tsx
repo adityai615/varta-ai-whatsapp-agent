@@ -68,7 +68,7 @@ export function ChatLogsPage() {
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Chat Logs"
-        subtitle="WhatsApp-style view of stored conversations with timestamps."
+        subtitle="WhatsApp-style view of stored conversations — powered by your Varta AI deployment."
         right={
           <select
             value={businessId || ""}

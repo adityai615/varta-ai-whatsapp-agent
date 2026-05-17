@@ -28,7 +28,7 @@ def _get_agent():
     return _agent
 
 
-logger = logging.getLogger("samvaad.webhook")
+logger = logging.getLogger("varta.webhook")
 
 def _resolve_business_id(to_number: str | None) -> str:
     """
